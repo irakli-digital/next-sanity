@@ -8,13 +8,13 @@ These pages will have content managed through Sanity Studio with real-time updat
 
 **Programs & Courses**
 - `/programs` - Programs listing page (dynamic content)
-- `/programs/[slug]` - Individual program pages (dynamic content)
-- Content: Title, description, pricing, curriculum, enrollment options, multimedia content
+- `/programs/[slug]` - Individual program pages with "Enroll Now" purchase button (dynamic content)
+- Content: Title, description, pricing, curriculum, enrollment options, multimedia content, purchase functionality
 
 **Books Store**
 - `/books` - Books listing page (dynamic content) 
-- `/books/[slug]` - Individual book pages (dynamic content)
-- Content: Title, description, preview, pricing, author info, purchase options
+- `/books/[slug]` - Individual book pages with "Buy Now" purchase button (dynamic content)
+- Content: Title, description, preview, pricing, author info, purchase functionality
 
 **Blog & Resources**
 - `/blog` - Blog listing page (dynamic content)
@@ -24,8 +24,8 @@ These pages will have content managed through Sanity Studio with real-time updat
 
 **Events & Calendar**
 - `/events` - Events listing page (dynamic content)
-- `/events/[slug]` - Individual event pages (dynamic content)
-- Content: Webinars, workshops, live sessions, registration
+- `/events/[slug]` - Individual event pages with "Register Now" purchase button (dynamic content)
+- Content: Webinars, workshops, live sessions, registration, purchase functionality
 
 **Video Gallery**
 - `/videos` - Video gallery (dynamic content)
@@ -40,18 +40,10 @@ These pages will be built as static components with minimal CMS integration:
 - `/about` - About page (content from CMS, layout static)
 - `/contact` - Contact page (static form, contact info from CMS)
 
-**User Account System**
-- `/login` - User authentication (static)
-- `/register` - User registration (static)
-- `/dashboard` - User dashboard (static layout, dynamic user data)
-- `/dashboard/purchases` - Purchase history (static)
-- `/dashboard/courses` - Enrolled courses (static)
-
-**E-commerce Pages**
-- `/cart` - Shopping cart (static functionality)
-- `/checkout` - Checkout process (static)
-- `/checkout/success` - Purchase confirmation (static)
-- `/checkout/cancel` - Purchase cancellation (static)
+**E-commerce Pages (Guest Checkout)**
+- `/checkout` - Guest checkout process (name, email, mobile input + payment)
+- `/checkout/success` - Purchase confirmation and digital delivery
+- `/checkout/cancel` - Purchase cancellation page
 
 ### Sanity Schema Architecture
 
@@ -215,50 +207,41 @@ src/app/
 │   ├── contact/page.tsx      # Contact page
 │   ├── programs/
 │   │   ├── page.tsx          # Programs listing
-│   │   └── [slug]/page.tsx   # Individual program
+│   │   └── [slug]/page.tsx   # Individual program with purchase button
 │   ├── books/
 │   │   ├── page.tsx          # Books listing
-│   │   └── [slug]/page.tsx   # Individual book
+│   │   └── [slug]/page.tsx   # Individual book with purchase button
 │   ├── blog/
 │   │   ├── page.tsx          # Blog listing
 │   │   └── [slug]/page.tsx   # Individual post
 │   ├── events/
 │   │   ├── page.tsx          # Events listing
-│   │   └── [slug]/page.tsx   # Individual event
+│   │   └── [slug]/page.tsx   # Individual event with purchase button
 │   ├── videos/
 │   │   ├── page.tsx          # Video gallery
 │   │   └── [slug]/page.tsx   # Individual video
 │   └── resources/page.tsx    # Resources hub
-├── (auth)/                    # Authentication routes
-│   ├── login/page.tsx
-│   └── register/page.tsx
-├── (dashboard)/               # User dashboard
-│   └── dashboard/
-│       ├── page.tsx          # Dashboard home
-│       ├── purchases/page.tsx
-│       └── courses/page.tsx
-├── (commerce)/                # E-commerce routes
-│   ├── cart/page.tsx
-│   └── checkout/
-│       ├── page.tsx
-│       ├── success/page.tsx
-│       └── cancel/page.tsx
+├── checkout/
+│   ├── page.tsx              # Guest checkout (name, email, mobile + payment)
+│   ├── success/page.tsx      # Purchase confirmation
+│   └── cancel/page.tsx       # Purchase cancellation
 ├── (sanity)/                  # CMS routes
 │   └── studio/page.tsx       # Sanity Studio
 ├── api/                       # API routes
-│   ├── auth/                 # Authentication
 │   ├── payments/             # Payment processing
+│   ├── orders/               # Order creation and management
+│   ├── email/                # Email notifications
 │   ├── revalidate-tag/       # Cache revalidation
-│   └── webhooks/             # External webhooks
+│   └── webhooks/             # Payment webhooks
 ├── globals.css
 └── layout.tsx
 ```
 
 #### Caching Strategy
 - **Static Generation**: Homepage hero, about page structure
-- **ISR (Incremental Static Regeneration)**: Programs, books, blog posts
-- **Server-Side Rendering**: User dashboard, dynamic user content
-- **Client-Side Rendering**: Shopping cart, interactive components
+- **ISR (Incremental Static Regeneration)**: Programs, books, blog posts, events
+- **Server-Side Rendering**: Checkout process, order confirmation
+- **Client-Side Rendering**: Purchase buttons, interactive components
 
 #### Performance Optimization
 - **Image Optimization**: Sanity CDN + Next.js Image component
@@ -274,11 +257,18 @@ src/app/
 - **Digital Product Delivery**: Automated email delivery system
 - **Invoice Generation**: PDF generation for purchases
 
-#### Shopping Cart & Orders
-- **Cart State Management**: Zustand or Context API
-- **Order Processing**: Database storage with status tracking
-- **Email Notifications**: Automated order confirmations
+#### Guest Checkout & Orders
+- **Direct Purchase Flow**: No cart - direct from product to checkout
+- **Guest Information**: Name, email, mobile number collection
+- **Order Processing**: Simple order creation with guest details
+- **Email Notifications**: Automated purchase confirmations with digital delivery
 - **Admin Panel**: Order management through Sanity Studio
+
+#### Purchase Button Integration
+- **Programs**: "Enroll Now" button on individual program pages
+- **Books**: "Buy Now" button on individual book pages
+- **Events**: "Register Now" button on individual event pages
+- **Checkout Flow**: Product → Guest Info → Payment → Confirmation + Email
 
 ### Analytics & Marketing Integration
 
@@ -307,11 +297,11 @@ src/app/
 - **User Data Security**: Encrypted storage, secure authentication
 - **Payment Security**: PCI DSS compliance for payment processing
 
-#### Authentication & Authorization
-- **NextAuth.js**: Social login, email/password authentication
-- **Role-Based Access**: Admin, instructor, student, guest roles
-- **Protected Routes**: Course content, premium resources
-- **Session Management**: Secure token handling
+#### Order Management
+- **Guest Orders**: Simple order tracking by email/phone
+- **Admin Access**: CMS-only authentication for content management
+- **Digital Delivery**: Automated email delivery of purchased content
+- **Order Tracking**: Basic order status without user accounts
 
 ### Development Phases Implementation
 
@@ -322,10 +312,10 @@ src/app/
 4. **Days 10-12**: Basic e-commerce setup, payment integration
 
 #### Phase 2: Advanced E-Commerce & Features (8 days)
-1. **Days 1-2**: User authentication and dashboard
-2. **Days 3-4**: Shopping cart and checkout process
+1. **Days 1-2**: Guest checkout system and purchase buttons
+2. **Days 3-4**: Payment gateway integration and order processing
 3. **Days 5-6**: Video gallery and event calendar
-4. **Days 7-8**: Email marketing and analytics integration
+4. **Days 7-8**: Email delivery system and analytics integration
 
 #### Phase 3: Optimization & Launch (4 days)
 1. **Day 1**: Performance optimization, SEO implementation
@@ -344,7 +334,7 @@ src/app/
 **Backend & CMS**
 - Sanity CMS for content management
 - Next.js API routes for custom functionality
-- Database: Sanity Content Lake + PostgreSQL for user data
+- Database: Sanity Content Lake + PostgreSQL for order data
 
 **E-commerce & Payments**
 - TBC Bank payment gateway
